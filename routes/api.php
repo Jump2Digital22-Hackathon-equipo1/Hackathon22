@@ -36,10 +36,12 @@ Route::get('/index/analytics/',[Company::class, 'indexByAnalytics'])
 ->middleware('role:admin');
 
 // Display companies' listing ordered by size - ascending or descending.
-Route::get('/index/size/{order}',[Company::class, 'indexBySize']);
+Route::get('/index/size/{order}',[Company::class, 'indexBySize'])
+->middleware(['role:admin|user']);;
 
 // Display companies' listing ordered by foundation date - ascending or descending.
-Route::get('/index/founded/{order}',[Company::class, 'indexByFounded']);
+Route::get('/index/founded/{order}',[Company::class, 'indexByFounded'])
+->middleware('role:admin|user');
 
 //Logout user
 Route::post('/logout', [UserController::class, 'logout'])
