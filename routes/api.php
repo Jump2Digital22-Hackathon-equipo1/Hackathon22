@@ -1,9 +1,7 @@
 <?php
 
 use App\Models\Company;
-use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
-use App\Models\User;
 use App\Http\Controllers\UserController;
 
 /*
@@ -19,11 +17,11 @@ use App\Http\Controllers\UserController;
 
 
 //POST /users : Create a user.
-Route::post('/users', [UserController::class, 'store'])
-->name('users.store');
+Route::post('/users', [UserController::class, 'store']);
+
 // POST /login : Login a user.
-Route::post('/login', [UserController::class, 'login'])
-->name('login');
+Route::post('/login', [UserController::class, 'login']);
+
 
 
 //PROTECTED ROUTES

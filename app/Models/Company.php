@@ -22,7 +22,6 @@ class Company extends Eloquent
     ];
     protected $primaryKey = 'id';
 
-
     // Display companies' listing ordered by size - ascending or descending.
     public function indexBySize($order)
     {
@@ -53,31 +52,5 @@ class Company extends Eloquent
             'founded' => $founded,
         ];
     }
-
-    /*
-
-    [['$group' => ['_id' => '$founded', 'count' => ['$sum' => 1]]], ['$sort' => ['_id' => 1]]]
-
-    $filter  = [];
-$options = ['sort' => ['username' => 1]];
-
-$client = new MongoDB\Client('mongodb://localhost');
-$client->mydb->mycollection->find($filter, $options);
-
-    db.collection.aggregate(
-   {$group : { _id : '$user', count : {$sum : 1}}}
-).result
-
-{"_id": "$industry", "count":{"$sum": 1}}
-[['$group' => ['_id' => '$industry', 'count' => ['$sum' => 1]]]]
-use MongoDB\Client;
-
-// Requires the MongoDB PHP Driver
-// https://www.mongodb.com/docs/drivers/php/
-
-$client = new Client('mongodb://localhost:27017/');
-$collection = $client->selectCollection('jump2digital', 'companies');
-$cursor = $collection->aggregate([['$group' => ['_id' => '$industry', 'count' => ['$sum' => 1]]]]);
-    */
 }
 
