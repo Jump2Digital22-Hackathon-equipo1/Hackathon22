@@ -19,12 +19,12 @@ class UserController extends Controller
      */
     public function store(Request $request)
     {  
-        //$role = User::role('admin')
-        //->get()
-        //->toArray();
+         $role = User::role('admin')
+         ->get()
+         ->toArray();
 
         $fields = [
-            'name' => 'required|string|unique:users',
+            'name' => 'required|string',
             'email' => 'required|email|unique:users',
             'password' => 'required|string|confirmed|min:6',
             'role' => 'required|string'
@@ -37,14 +37,12 @@ class UserController extends Controller
             return response()->json(['messages' => 'The given data was invalid.', 'errors' => $validated->errors()], 422);
         }
 
+        if((isset($role[0])) && ($request->get('role') == 'admin')) { 
 
-        //if((isset($role[0])) && ($request->get('role') == 'admin')) { 
-
-           // return response()->json(['message' => 'User with administrator priviledges already exists'], 409);
-       // }
-       // else 
+        return response()->json(['message' => 'User with administrator priviledges already exists'], 409);
+        }
+       else 
         {
-         
              $user = User::create([
              'name' => $request->get('name'),
              'email' => $request->get('email'),
@@ -55,40 +53,17 @@ class UserController extends Controller
 
             $token = $user->createToken('apptoken')->accessToken;
 
-        $response = [
-            'id' => $user['id'],
+            $response = [
             'username' => $user['name'],
             'email' => $user['email'],
             'token' => $token,
-            'role' => $user['role'],
         ];
 
-        return response($response, 201);
+         return response($response, 201);
     }
 //}
 
-    /**
-     * Update user`s name.
-     *
-     * @param  \Illuminate\Http\Request  $request
-     * @param  int  $id
-     * @return \Illuminate\Http\Response
-     */
-    public function update(Request $request, $id)
-    {
-       if(auth('api')->user()->id == $id || 
-       auth()->user()->roles[0]['name'] == 'admin') {
-        $user = User::find($id);
-        $user->update($request->all('name'));
-        return $user;}
-        else
-        {
-            return response ([
-            'message' => 'Not authorized'], 401);
-        }
-    }
-
-    
+   
     public function login(Request $request) {
         $fields = $request->validate([
             'email' => 'required|string',
@@ -105,7 +80,6 @@ class UserController extends Controller
 
         $response = [
             'message' => 'User logged in',
-            'id' => $user['id'],
             'user' => $user['name'],
             'token' => $token
         ];

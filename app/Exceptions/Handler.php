@@ -2,7 +2,9 @@
 
 namespace App\Exceptions;
 
+use Exception;
 use Throwable;
+use Maklad\Permission\Exceptions\UnauthorizedException;
 use Illuminate\Foundation\Exceptions\Handler as ExceptionHandler;
 use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
 use Symfony\Component\HttpKernel\Exception\AccessDeniedHttpException;
@@ -46,7 +48,7 @@ class Handler extends ExceptionHandler
      */
     public function register()
     {
-        $this->renderable(function (NotFoundHttpException $e, $request) {
+    $this->renderable(function (NotFoundHttpException $e, $request) {
             if ($request->wantsJson()) {
             return response()->json(['message' => 'URL not found'], 404);
             }
@@ -58,7 +60,13 @@ class Handler extends ExceptionHandler
             }
       });
 
-  $this->renderable(function (MethodNotAllowedHttpException $e, $request) {
+    $this->renderable(function (Exception $e) {
+            if ($e instanceof UnauthorizedException) {
+            return response()->json(['message' => 'User Access Denied'], 403);
+            }
+      });
+
+    $this->renderable(function (MethodNotAllowedHttpException $e, $request) {
             if ($request->wantsJson()) {
             return response()->json(['message' => 'Method not allowed'], 405);
             }
