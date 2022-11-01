@@ -7,7 +7,7 @@ use Laravel\Passport\HasApiTokens;
 use Illuminate\Notifications\Notifiable;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Jenssegers\Mongodb\Auth\User as Authenticatable;
-use Jenssegers\Mongodb\Eloquent\Model as Eloquent;
+//use Jenssegers\Mongodb\Eloquent\Model as Eloquent;
 use Maklad\Permission\Traits\HasRoles;
 
 class User extends Authenticatable
