@@ -42,8 +42,7 @@ Route::get('/index/founded/{order}',[Company::class, 'indexByFounded'])
 ->middleware('role:admin|user');
 
 //Logout user
-Route::post('/logout', [UserController::class, 'logout'])
-->name('logout');
+Route::post('/logout', [UserController::class, 'logout']);
 
 }
 );

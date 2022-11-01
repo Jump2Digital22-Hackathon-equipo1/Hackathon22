@@ -93,9 +93,8 @@ class UserController extends Controller
         $user = Auth::user();
         $user->tokens()->delete();
 
-       return [
-           'message' => 'User logged out'
-        ];
+       return response([
+           'message' => 'User logged out'], 200);
     }
 
 
