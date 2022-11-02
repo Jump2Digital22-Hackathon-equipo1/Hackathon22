@@ -95,7 +95,7 @@ return [
 
         'mongodb' => [
             'driver' => 'mongodb',
-            'dsn' => 'mongodb+srv://tester:mTtO8KhConSjmZkS@cluster0.q0cuycl.mongodb.net/?retryWrites=true&w=majority',
+            'dsn' => '',
             'database' => 'jump2digital',
             ],
         ],
