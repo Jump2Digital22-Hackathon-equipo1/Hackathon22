@@ -30,18 +30,18 @@ class UserController extends Controller
             'role' => 'required|string'
         ];
 
-        $validated = Validator::make($request->all(), $fields, ['email.unique' => 'Invalid entry']);
+        $validated = Validator::make($request->all(), $fields);
 
         if($validated->fails())
         {
-            return response()->json(['messages' => 'The given data was invalid.', 'errors' => $validated->errors()], 422);
+        return response()->json(['messages' => 'The given data was invalid'], 422);
         }
 
-        if((isset($role[0])) && ($request->get('role') == 'admin')) { 
+        if((isset($role[0])) && ($request->get('role') != 'user')) { 
 
-        return response()->json(['message' => 'User with administrator priviledges already exists'], 409);
+        return response()->json(['message' => 'User with this role cannot be registered'], 409);
         }
-       else 
+        else 
         {
              $user = User::create([
              'name' => $request->get('name'),
@@ -59,8 +59,10 @@ class UserController extends Controller
             'token' => $token,
         ];
 
-         return response($response, 201);
-    }
+        return response($response, 201);
+
+        }
+        
 //}
 
    
