@@ -16,7 +16,7 @@ class UserSeeder extends Seeder
     public function run()
     {
         $fields = ([
-            'name' => 'admin',
+            'name' => 'Admin',
             'email' => 'admin@admin.net',
             'password' => '123456',
         ]);
