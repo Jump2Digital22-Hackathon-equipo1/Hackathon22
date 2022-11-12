@@ -103,6 +103,7 @@ php artisan serve
 ## Working with API
 
 ##### You need API Platform like "Postman" for testing API requests
+##### all responses return in JSON
 
 For testing purposes two users generated during seeding:
 
