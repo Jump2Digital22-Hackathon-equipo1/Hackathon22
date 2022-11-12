@@ -16,12 +16,11 @@ use App\Http\Controllers\UserController;
 */
 
 
-//POST /users : Create a user.
-Route::post('/users', [UserController::class, 'store']);
-
 // POST /login : Login a user.
 Route::post('/login', [UserController::class, 'login']);
 
+//POST /users : Create a user.
+Route::post('/users', [UserController::class, 'store']);
 
 
 //PROTECTED ROUTES
@@ -35,7 +34,7 @@ Route::get('/index/analytics/',[Company::class, 'indexByAnalytics'])
 
 // Display companies' listing ordered by size - ascending or descending.
 Route::get('/index/size/{order}',[Company::class, 'indexBySize'])
-->middleware(['role:admin|user']);;
+->middleware(['role:admin|user']);
 
 // Display companies' listing ordered by foundation date - ascending or descending.
 Route::get('/index/founded/{order}',[Company::class, 'indexByFounded'])
@@ -43,6 +42,14 @@ Route::get('/index/founded/{order}',[Company::class, 'indexByFounded'])
 
 //Logout user
 Route::post('/logout', [UserController::class, 'logout']);
+
+//POST /users : Delete a user.
+Route::post('/users/delete', [UserController::class, 'destroy'])
+->middleware('role:admin');
+
+//GET /users : Get list of users.
+Route::get('/users/list', [UserController::class, 'list'])
+->middleware('role:admin');
 
 }
 );
