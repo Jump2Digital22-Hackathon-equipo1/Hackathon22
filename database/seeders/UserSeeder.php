@@ -46,6 +46,6 @@ class UserSeeder extends Seeder
         $user->createToken('apptoken')->accessToken;
 
         $user->assignRole(['user']);
-      
+
     }
 }

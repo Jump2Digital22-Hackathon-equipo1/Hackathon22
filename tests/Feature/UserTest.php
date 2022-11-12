@@ -6,6 +6,7 @@ use Tests\TestCase;
 
 class UserTest extends TestCase
 {
+   
     public function test_user_login()
     {   
         $response = $this->post('/api/login', [
@@ -55,6 +56,19 @@ class UserTest extends TestCase
        $response->assertStatus(200);
        }
 
+            /** 
+    * @depends test_user_login
+    */
+    public function test_user_can_not_delete_users($response)
+    {
+       $token = $response['token'];
+       $response = $this->withHeaders([
+        'Authorization' => 'Bearer '. $token,
+        'Accept' => 'application/json',
+    ])->post('/api/users/delete', ['email' => 'user@admin.net']);
+    $response->assertStatus(403);
+    }
+    
     /** 
     * @depends test_user_login
     */

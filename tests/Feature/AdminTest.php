@@ -6,6 +6,17 @@ use Tests\TestCase;
 
 class AdminTest extends TestCase
 {
+    public function test_create_user()
+    {   
+    $response = $this->post('/api/users', [
+        'name' => 'User_1',
+        'email' => 'user1@admin.net',
+        'password' => '123456',
+        'password_confirmation' => '123456',
+        'role' => 'user',
+    ]);  
+    return $response->assertStatus(200);
+    }
 
     public function test_admin_login()
     {   
@@ -56,6 +67,22 @@ class AdminTest extends TestCase
        $response->assertStatus(200);
        }
 
+
+    /** 
+    * @depends test_admin_login
+    */
+    public function test_admin_can_delete_users($response)
+    {
+       $token = $response['token'];
+       $response = $this->withHeaders([
+        'Authorization' => 'Bearer '. $token,
+        'Accept' => 'application/json',
+        
+    ])->post('/api/users/delete', ['email' => 'user1@admin.net']);
+    $response->assertStatus(200);
+    }
+
+
     /** 
     * @depends test_admin_login
     */
@@ -68,4 +95,5 @@ class AdminTest extends TestCase
     ])->post('/api/logout');
     $response->assertStatus(200);
     }
+
 }

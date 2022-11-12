@@ -17,7 +17,7 @@ class UserController extends Controller
      *
      */
     public function list() {   
-        $list = DB::collection('users')->project(['name'=> 1,  'email' => 1, '_id' => 0])->get();
+        $list = DB::collection('users')->project(['name'=> 1, 'email' => 1, '_id' => 0])->get();
         return response($list, 201); 
     }
     /**
@@ -68,7 +68,7 @@ class UserController extends Controller
             'token' => $token,
         ];
 
-        return response($response, 201);
+        return response($response, 200);
 
         }
 
