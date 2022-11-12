@@ -20,13 +20,13 @@ https://github.com/mostafamaklad/laravel-permission-mongodb package implemented 
 
 ## Installation
 
-1. Clone repository in your local htdocs directory
+1. Clone repository to your local htdocs directory
 ```
 git clone https://github.com/dm161272/jump2digital.git
 ```
 it will be cloned into jump2digital directory
 
-2. Change directory to  jump2digital and 
+2. Change directory to jump2digital and 
 run 
 ```
 composer update
