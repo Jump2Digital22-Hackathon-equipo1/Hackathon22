@@ -16,6 +16,7 @@ class UserTest extends TestCase
         return $response->assertStatus(201);
     }
 
+
     /** 
     * @depends test_user_login
     */
