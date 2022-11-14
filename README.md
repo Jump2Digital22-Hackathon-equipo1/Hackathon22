@@ -6,7 +6,7 @@ Jump2Digital 2022 | Backend
 
 This package contains API for database queries from Jump2Digital hackathone task.
 
-Require PHP, Laravel framework, Laravel Composer and Git to be installed.
+Require PHP, Laravel framework, PHP Composer and Git to be installed.
 
 MongoDB used for storing data.
 
