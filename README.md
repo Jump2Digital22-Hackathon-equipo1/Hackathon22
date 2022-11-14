@@ -86,7 +86,7 @@ if you want to delete all previous data and refresh database to it initial state
 ```
 php artisan migrate:fresh
 ```
-WARNING: AFTER EXECUTION OF THIS COMMAND ALL PREVIOUS RECORDS IN THE DATABASE WILL BE ERASED!!!
+WARNING: AFTER EXECUTION OF THIS COMMAND ALL PREVIOUS COLLECTIONS AND RECORDS IN THE DATABASE WILL BE ERASED!!!
 
 5. Generate passport client keys
 ```
