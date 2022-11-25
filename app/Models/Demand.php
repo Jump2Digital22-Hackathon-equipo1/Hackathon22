@@ -9,8 +9,8 @@ class Demand extends Eloquent
 {
     use HasFactory;
     protected $fillable = [
-    'center_id',
-    'week_number',
+    'id',
+    'week',
     'meal_id',
     'checkout_price',
     'base_price',
@@ -19,3 +19,7 @@ class Demand extends Eloquent
     'num_orders',
     ];
 }
+
+
+/**id	week	center_id	meal_id	checkout_price	base_price	emailer_for_promotion	homepage_featured	num_orders
+ */

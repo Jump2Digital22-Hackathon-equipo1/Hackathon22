@@ -1,4 +1,5 @@
 <?php
+
 /**weekly demand
 
 id: unique ID of the instance
@@ -28,8 +29,8 @@ return new class extends Migration
     {
         Schema::create('demands', function (Blueprint $table) {
             $table->id();
-            $table->integer('center_id');
-            $table->integer('week_number');
+            $table->integer('id');
+            $table->integer('week');
             $table->integer('meal_id');
             $table->integer('checkout_price');
             $table->integer('base_price');
