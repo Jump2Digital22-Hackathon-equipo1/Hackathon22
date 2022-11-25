@@ -11,6 +11,7 @@ use MongoDB\Driver\Exception\BulkWriteException;
 use MongoDB\Driver\Exception\Exception;
 use MongoDB\Driver\Server;
 use MongoDB\Driver\Session;
+use MongoDB\Driver\WriteConcern;
 use MongoDB\GridFS\Bucket;
 use MongoDB\Model\IndexInfo;
 use MongoDB\Operation\FindOneAndReplace;
@@ -82,6 +83,45 @@ final class Operation
         }
     }
 
+    public static function fromChangeStreams(stdClass $operation)
+    {
+        $o = new self($operation);
+
+        /* Note: change streams only return majority-committed writes, so ensure
+         * each operation applies that write concern. This will avoid spurious
+         * test failures. */
+        $writeConcern = new WriteConcern(WriteConcern::MAJORITY);
+
+        // Expect all operations to succeed
+        $o->errorExpectation = ErrorExpectation::noError();
+
+        /* The Change Streams spec tests include a unique "rename" operation,
+         * which we should convert to a renameCollection command to be run
+         * against the admin database. */
+        if ($operation->name === 'rename') {
+            $o->object = self::OBJECT_SELECT_DATABASE;
+            $o->databaseName = 'admin';
+            $o->name = 'runCommand';
+            $o->arguments = [
+                'command' => [
+                    'renameCollection' => $operation->database . '.' . $operation->collection,
+                    'to' => $operation->database . '.' . $operation->arguments->to,
+                // Note: Database::command() does not inherit WC, so be explicit
+                    'writeConcern' => $writeConcern,
+                ],
+            ];
+
+            return $o;
+        }
+
+        $o->databaseName = $operation->database;
+        $o->collectionName = $operation->collection;
+        $o->collectionOptions = ['writeConcern' => $writeConcern];
+        $o->object = self::OBJECT_SELECT_COLLECTION;
+
+        return $o;
+    }
+
     public static function fromClientSideEncryption(stdClass $operation)
     {
         $o = new self($operation);
@@ -92,6 +132,20 @@ final class Operation
         if (isset($operation->collectionOptions)) {
             $o->collectionOptions = (array) $operation->collectionOptions;
         }
+
+        return $o;
+    }
+
+    public static function fromCommandMonitoring(stdClass $operation)
+    {
+        $o = new self($operation);
+
+        if (isset($operation->collectionOptions)) {
+            $o->collectionOptions = (array) $operation->collectionOptions;
+        }
+
+        /* We purposefully avoid setting a default error expectation, because
+         * some tests may trigger a write or command error. */
 
         return $o;
     }
@@ -608,7 +662,7 @@ final class Operation
                 $databaseName = $args['database'];
                 $collectionName = $args['collection'];
 
-                $test->assertContains($collectionName, $context->getInternalClient()->selectDatabase($databaseName)->listCollectionNames());
+                $test->assertContains($collectionName, $context->selectDatabase($databaseName)->listCollectionNames());
 
                 return null;
 
@@ -616,7 +670,7 @@ final class Operation
                 $databaseName = $args['database'];
                 $collectionName = $args['collection'];
 
-                $test->assertNotContains($collectionName, $context->getInternalClient()->selectDatabase($databaseName)->listCollectionNames());
+                $test->assertNotContains($collectionName, $context->selectDatabase($databaseName)->listCollectionNames());
 
                 return null;
 
@@ -679,7 +733,7 @@ final class Operation
             function (IndexInfo $indexInfo) {
                 return $indexInfo->getName();
             },
-            iterator_to_array($context->getInternalClient()->selectCollection($databaseName, $collectionName)->listIndexes())
+            iterator_to_array($context->selectCollection($databaseName, $collectionName)->listIndexes())
         );
     }
 
@@ -774,10 +828,10 @@ final class Operation
             case 'findOneAndDelete':
             case 'findOneAndReplace':
             case 'findOneAndUpdate':
-                return ResultExpectation::ASSERT_MATCHES_DOCUMENT;
+                return ResultExpectation::ASSERT_SAME_DOCUMENT;
 
             case 'find':
-                return ResultExpectation::ASSERT_DOCUMENTS_MATCH;
+                return ResultExpectation::ASSERT_SAME_DOCUMENTS;
 
             case 'insertMany':
                 return ResultExpectation::ASSERT_INSERTMANY;

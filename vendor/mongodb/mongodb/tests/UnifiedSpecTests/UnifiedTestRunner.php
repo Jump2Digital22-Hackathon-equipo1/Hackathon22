@@ -19,32 +19,23 @@ use UnexpectedValueException;
 
 use function call_user_func;
 use function count;
-use function explode;
 use function filter_var;
 use function gc_collect_cycles;
 use function getenv;
-use function implode;
 use function in_array;
 use function is_string;
-use function parse_url;
 use function PHPUnit\Framework\assertContainsOnly;
 use function PHPUnit\Framework\assertInstanceOf;
 use function PHPUnit\Framework\assertIsArray;
 use function PHPUnit\Framework\assertIsString;
 use function PHPUnit\Framework\assertNotEmpty;
-use function PHPUnit\Framework\assertNotFalse;
-use function PHPUnit\Framework\assertStringContainsString;
-use function PHPUnit\Framework\assertStringStartsWith;
 use function preg_match;
 use function preg_replace;
 use function sprintf;
-use function strlen;
 use function strpos;
-use function substr_replace;
 use function version_compare;
 
 use const FILTER_VALIDATE_BOOLEAN;
-use const PHP_URL_HOST;
 
 /**
  * Unified test runner.
@@ -59,8 +50,7 @@ final class UnifiedTestRunner
     public const SERVER_ERROR_UNAUTHORIZED = 13;
 
     public const MIN_SCHEMA_VERSION = '1.0';
-
-    public const MAX_SCHEMA_VERSION = '1.7';
+    public const MAX_SCHEMA_VERSION = '1.5';
 
     /** @var MongoDB\Client */
     private $internalClient;
@@ -188,7 +178,8 @@ final class UnifiedTestRunner
             $this->prepareInitialData($initialData);
         }
 
-        $context = $this->createContext();
+        // Give Context unmodified URI so it can enforce useMultipleMongoses
+        $context = new Context($this->internalClient, $this->internalClientUri);
 
         /* If an EntityMap observer has been configured, assign the Context's
          * EntityMap to a class property so it can later be accessed from run(),
@@ -451,7 +442,7 @@ final class UnifiedTestRunner
     /**
      * Work around potential error executing distinct on sharded clusters.
      *
-     * @see https://github.com/mongodb/specifications/blob/master/source/unified-test-format/unified-test-format.rst#staledbversion-errors-on-sharded-clusters
+     * @see https://github.com/mongodb/specifications/blob/master/source/transactions/tests/README.rst#why-do-tests-that-run-distinct-sometimes-fail-with-staledbversion
      */
     private function preventStaleDbVersionError(array $operations, Context $context): void
     {
@@ -485,72 +476,5 @@ final class UnifiedTestRunner
                 return;
             }
         }
-    }
-
-    private function createContext(): Context
-    {
-        $context = new Context($this->internalClient, $this->internalClientUri);
-
-        if ($this->getPrimaryServer()->getType() === Server::TYPE_MONGOS) {
-            // We assume the internal client URI has multiple mongos hosts
-            $multiMongosUri = $this->internalClientUri;
-
-            /* TODO: If an SRV URI is provided, we can consider connecting and
-             * checking the topology for multiple mongoses and then selecting a
-             * single mongos to reconstruct a single mongos URI; however, that
-             * may omit necessary URI options provided by TXT records. */
-            assertStringStartsWith('mongodb://', $multiMongosUri);
-            assertStringContainsString(',', parse_url($multiMongosUri, PHP_URL_HOST));
-
-            $singleMongosUri = self::removeMultipleHosts($multiMongosUri);
-
-            $context->setUrisForUseMultipleMongoses($singleMongosUri, $multiMongosUri);
-        }
-
-        /* TODO: Enable this logic once PHPLIB-794 is implemented. For now, load
-         * balancer tests will continue to use MONGODB_URI. */
-        if (false && $this->getPrimaryServer()->getType() === Server::TYPE_LOAD_BALANCER && ! $this->isServerless()) {
-            $singleMongosUri = getenv('MONGODB_SINGLE_MONGOS_LB_URI');
-            $multiMongosUri = getenv('MONGODB_MULTI_MONGOS_LB_URI');
-
-            assertNotFalse($singleMongosUri);
-            assertNotFalse($multiMongosUri);
-
-            $context->setUrisForUseMultipleMongoses($singleMongosUri, $multiMongosUri);
-        }
-
-        return $context;
-    }
-
-    /**
-     * Removes any hosts beyond the first in a URI. This function should only be
-     * used with a sharded cluster URI, but that is not enforced.
-     */
-    private static function removeMultipleHosts(string $uri): string
-    {
-        $parts = parse_url($uri);
-
-        assertIsArray($parts);
-
-        $hosts = explode(',', $parts['host']);
-
-        // Nothing to do if the URI already has a single mongos host
-        if (count($hosts) === 1) {
-            return $uri;
-        }
-
-        // Re-append port to last host
-        if (isset($parts['port'])) {
-            $hosts[count($hosts) - 1] .= ':' . $parts['port'];
-        }
-
-        $singleHost = $hosts[0];
-        $multipleHosts = implode(',', $hosts);
-
-        $pos = strpos($uri, $multipleHosts);
-
-        assertNotFalse($pos);
-
-        return substr_replace($uri, $singleHost, $pos, strlen($multipleHosts));
     }
 }

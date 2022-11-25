@@ -12,8 +12,6 @@ use MongoDB\Driver\Cursor;
 use MongoDB\Driver\Server;
 use MongoDB\Driver\Session;
 use MongoDB\GridFS\Bucket;
-use MongoDB\Model\CollectionInfo;
-use MongoDB\Model\DatabaseInfo;
 use MongoDB\Model\IndexInfo;
 use MongoDB\Operation\DatabaseCommand;
 use MongoDB\Operation\FindOneAndReplace;
@@ -25,7 +23,6 @@ use stdClass;
 use Throwable;
 
 use function array_diff_key;
-use function array_intersect_key;
 use function array_key_exists;
 use function array_map;
 use function current;
@@ -214,7 +211,6 @@ final class Operation
     private function executeForChangeStream(ChangeStream $changeStream)
     {
         $args = $this->prepareArguments();
-        Util::assertArgumentsBySchema(ChangeStream::class, $this->name, $args);
 
         switch ($this->name) {
             case 'iterateUntilDocumentOrError':
@@ -247,7 +243,6 @@ final class Operation
     private function executeForClient(Client $client)
     {
         $args = $this->prepareArguments();
-        Util::assertArgumentsBySchema(Client::class, $this->name, $args);
 
         switch ($this->name) {
             case 'createChangeStream':
@@ -263,12 +258,7 @@ final class Operation
                 return iterator_to_array($client->listDatabaseNames($args));
 
             case 'listDatabases':
-                return array_map(
-                    function (DatabaseInfo $info) {
-                        return $info->__debugInfo();
-                    },
-                    iterator_to_array($client->listDatabases($args))
-                );
+                return iterator_to_array($client->listDatabases($args));
 
             default:
                 Assert::fail('Unsupported client operation: ' . $this->name);
@@ -278,7 +268,6 @@ final class Operation
     private function executeForCollection(Collection $collection)
     {
         $args = $this->prepareArguments();
-        Util::assertArgumentsBySchema(Collection::class, $this->name, $args);
 
         switch ($this->name) {
             case 'aggregate':
@@ -465,12 +454,7 @@ final class Operation
                 );
 
             case 'listIndexes':
-                return array_map(
-                    function (IndexInfo $info) {
-                        return $info->__debugInfo();
-                    },
-                    iterator_to_array($collection->listIndexes($args))
-                );
+                return iterator_to_array($collection->listIndexes($args));
 
             case 'mapReduce':
                 assertArrayHasKey('map', $args);
@@ -487,16 +471,6 @@ final class Operation
                     array_diff_key($args, ['map' => 1, 'reduce' => 1, 'out' => 1])
                 );
 
-            case 'rename':
-                assertArrayHasKey('to', $args);
-                assertIsString($args['to']);
-
-                return $collection->rename(
-                    $args['to'],
-                    null, /* $toDatabaseName */
-                    array_diff_key($args, ['to' => 1])
-                );
-
             default:
                 Assert::fail('Unsupported collection operation: ' . $this->name);
         }
@@ -505,7 +479,6 @@ final class Operation
     private function executeForCursor(Cursor $cursor)
     {
         $args = $this->prepareArguments();
-        Util::assertArgumentsBySchema(Cursor::class, $this->name, $args);
 
         switch ($this->name) {
             case 'close':
@@ -553,7 +526,6 @@ final class Operation
     private function executeForDatabase(Database $database)
     {
         $args = $this->prepareArguments();
-        Util::assertArgumentsBySchema(Database::class, $this->name, $args);
 
         switch ($this->name) {
             case 'aggregate':
@@ -596,28 +568,7 @@ final class Operation
                 return iterator_to_array($database->listCollectionNames($args));
 
             case 'listCollections':
-                return array_map(
-                    function (CollectionInfo $info) {
-                        return $info->__debugInfo();
-                    },
-                    iterator_to_array($database->listCollections($args))
-                );
-
-            case 'modifyCollection':
-                assertArrayHasKey('collection', $args);
-                assertIsString($args['collection']);
-
-                /* ModifyCollection takes collection and command options
-                 * separately, so we must split the array after initially
-                 * filtering out the collection name.
-                 *
-                 * The typeMap option is intentionally omitted since it is
-                 * specific to PHPLIB and will never appear in spec tests. */
-                $options = array_diff_key($args, ['collection' => 1]);
-                $collectionOptions = array_diff_key($options, ['session' => 1, 'writeConcern' => 1]);
-                $options = array_intersect_key($options, ['session' => 1, 'writeConcern' => 1]);
-
-                return $database->modifyCollection($args['collection'], $collectionOptions, $options);
+                return iterator_to_array($database->listCollections($args));
 
             case 'runCommand':
                 assertArrayHasKey('command', $args);
@@ -636,7 +587,6 @@ final class Operation
     private function executeForSession(Session $session)
     {
         $args = $this->prepareArguments();
-        Util::assertArgumentsBySchema(Session::class, $this->name, $args);
 
         switch ($this->name) {
             case 'abortTransaction':
@@ -677,7 +627,6 @@ final class Operation
     private function executeForBucket(Bucket $bucket)
     {
         $args = $this->prepareArguments();
-        Util::assertArgumentsBySchema(Bucket::class, $this->name, $args);
 
         switch ($this->name) {
             case 'delete':
@@ -723,7 +672,6 @@ final class Operation
     private function executeForTestRunner()
     {
         $args = $this->prepareArguments();
-        Util::assertArgumentsBySchema(self::OBJECT_TEST_RUNNER, $this->name, $args);
 
         switch ($this->name) {
             case 'assertCollectionExists':
