@@ -1,5 +1,8 @@
 <?php
 
+use App\Http\Controllers\CenterController;
+use App\Http\Controllers\ProductController;
+use App\Http\Controllers\DemandController;
 use App\Models\Company;
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\UserController;
@@ -21,6 +24,14 @@ Route::post('/login', [UserController::class, 'login']);
 
 //POST /users : Create a user.
 Route::post('/users', [UserController::class, 'store']);
+
+
+
+Route::get('/index/listallproducts/',[ProductController::class, 'listAllProducts']);
+
+Route::get('/index/listalldemands/',[DemandController::class, 'listAllDemands']);
+
+Route::get('/index/listallcenters/',[CenterController::class, 'listAllCenters']);
 
 
 //PROTECTED ROUTES
