@@ -10,4 +10,5 @@ public class Hackathon22Application {
 		SpringApplication.run(Hackathon22Application.class, args);
 	}
 
+
 }
